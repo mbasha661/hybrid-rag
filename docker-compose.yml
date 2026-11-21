@@ -1,0 +1,33 @@
+# One command: docker compose up
+# Starts the web demo at http://localhost:8080
+# (the same UI as the Vercel site, served locally by nginx).
+#
+# The CLI app runs on demand (it is not started by `up`):
+#   docker compose run --rm rag ask "How are songs delivered to listeners?"
+#   docker compose run --rm rag ask "your question" --llm groq   # needs GROQ_API_KEY
+
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+
+  rag:
+    build: .
+    profiles: ["cli"]
+    environment:
+      # Optional free Groq key (https://console.groq.com). Leave unset for
+      # fully local evidence mode. Compose reads it from your shell or a
+      # local .env file (never commit a real key).
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-120b}
+    volumes:
+      # The vector DB persists across runs, so ingest happens once.
+      - rag-db:/app/Vector RAG/chroma_db
+      # Uncomment to index your own PDFs instead of the bundled sample:
+      # - ./data:/app/Vector RAG/data
+
+volumes:
+  rag-db:

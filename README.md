@@ -43,6 +43,35 @@ python main.py ask "How are songs delivered to listeners over the internet?"
 First run downloads the free embedding model once (~100 MB), then everything
 works offline except the optional Groq answer mode.
 
+## Run with Docker
+
+One command starts the web demo locally at <http://localhost:8080>
+(the same UI as the Vercel site):
+
+```bash
+./web/fetch-model.sh     # once: downloads the free embedding model files
+docker compose up
+```
+
+Run the CLI app (Vector RAG + Graph RAG) on demand:
+
+```bash
+docker compose run --rm rag ask "How are songs delivered to listeners over the internet?"
+```
+
+The first `ask` indexes the bundled sample PDF into a persistent Docker
+volume, so later questions start fast. For a written answer with the free
+Groq tier instead of local evidence mode:
+
+```bash
+GROQ_API_KEY=your_free_key docker compose run --rm rag ask "your question" --llm groq
+```
+
+To index your own PDFs, uncomment the `./data` volume line in
+`docker-compose.yml`, drop your PDFs into a `data/` folder, remove the old
+index with `docker volume rm hybrid-rag_rag-db`, and run
+`docker compose run --rm rag ingest`.
+
 ## The pipeline
 
 ```text
