@@ -41,7 +41,10 @@ function bm25Scores(query) {
 async function getEmbedder() {
   if (!embedder) {
     status("Loading the free embedding model into your browser (one time, ~30 MB)...");
-    const { pipeline } = await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2");
+    const { pipeline, env } = await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2");
+    env.allowLocalModels = true;
+    env.allowRemoteModels = false;          // model is hosted on this site, no external calls
+    env.localModelPath = "/models/";
     embedder = await pipeline("feature-extraction", "Xenova/bge-small-en-v1.5", { dtype: "q8" });
   }
   return embedder;
