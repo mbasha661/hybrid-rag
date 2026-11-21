@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hybrid Vector RAG - demo</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  h1 { font-size: 1.4rem; margin-bottom: .2rem; }
+  .sub { opacity: .7; font-size: .9rem; margin-top: 0; }
+  .row { display: flex; gap: .5rem; margin: 1rem 0; flex-wrap: wrap; align-items: center; }
+  input[type=text] { flex: 1; min-width: 200px; padding: .6rem; font-size: 1rem; border: 1px solid #888; border-radius: 8px; }
+  button { padding: .6rem 1rem; font-size: 1rem; border: 0; border-radius: 8px; background: #1db954; color: #fff; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: wait; }
+  label { font-size: .9rem; }
+  .hit { border: 1px solid #8884; border-radius: 8px; padding: .6rem .8rem; margin: .5rem 0; }
+  .hit .cite { font-weight: 600; font-size: .85rem; }
+  .hit .ranks { font-size: .8rem; opacity: .65; margin-left: .5rem; }
+  .hit .txt { font-size: .9rem; opacity: .9; margin-top: .3rem; }
+  #status { font-size: .85rem; opacity: .7; }
+  #answer { border-left: 3px solid #1db954; padding-left: .8rem; margin: 1rem 0; white-space: pre-wrap; }
+  details { font-size: .85rem; opacity: .8; margin-top: 1.5rem; }
+</style>
+</head>
+<body>
+<h1>Hybrid Vector RAG</h1>
+<p class="sub">Keyword search (BM25) + meaning search (vectors), fused - running fully in your browser on the Spotify app architecture PDF. Free demo by Mahaboob Basha.</p>
+
+<div class="row">
+  <input id="q" type="text" value="How are songs delivered to listeners over the internet?" aria-label="question">
+  <button id="go">Ask</button>
+</div>
+<div class="row">
+  <label><input type="radio" name="mode" value="hybrid" checked> Hybrid (BM25 + vectors)</label>
+  <label><input type="radio" name="mode" value="keyword"> Keyword only</label>
+  <label><input type="radio" name="mode" value="semantic"> Meaning only</label>
+</div>
+<div class="row">
+  <input id="groq" type="text" placeholder="Optional: your free Groq API key for a written answer (stays in this browser)" aria-label="groq key">
+</div>
+<div id="status">Loading passages...</div>
+<div id="answer"></div>
+<div id="hits"></div>
+
+<details>
+  <summary>How it works</summary>
+  <p>19 passages from the PDF were embedded offline with the free bge-small-en-v1.5 model.
+  Your question is embedded in the browser with the same model (transformers.js, one-time ~30 MB download),
+  BM25 scores exact words, and reciprocal rank fusion merges both rankings.
+  With a free Groq key (console.groq.com) the top passages go to Groq's free tier for a written answer with page citations;
+  without a key you get the passages themselves. The key never leaves your browser except to api.groq.com.</p>
+</details>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
