@@ -9,6 +9,17 @@ Free resources only: local embeddings, local vector DB, and a free LLM
 (Groq free tier or local Ollama) for the answer step. No paid API, no cloud
 database, no deploy needed.
 
+## Repository layout
+
+```text
+Vector RAG/   the hybrid BM25 + vector app: main.py, data/, requirements.txt, tests/
+Graph RAG/    the local concept-graph lane: graph_rag.py and its tests
+web/          combined browser demo of both lanes (the Vercel site below)
+```
+
+`Vector RAG/main.py` combines both lanes by default: it imports
+`Graph RAG/graph_rag.py` and fuses graph results with the BM25/vector list.
+
 ## Live demo
 
 A small browser version of this project (same BM25 + vector + RRF pipeline
@@ -23,7 +34,8 @@ Requires Python 3.10+.
 ```bash
 python -m venv .venv
 source .venv/bin/activate          # Windows PowerShell: .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+pip install -r "Vector RAG/requirements.txt"
+cd "Vector RAG"
 python main.py ingest              # indexes data/*.pdf into ./chroma_db (once)
 python main.py ask "How are songs delivered to listeners over the internet?"
 ```
@@ -70,22 +82,27 @@ time. Override the model with `GROQ_MODEL` if needed. No key is bundled.
 ## Files
 
 ```text
-main.py            the complete app (single file)
-requirements.txt   free dependencies only
-data/              your PDFs (the Spotify app architecture PDF is the sample)
-chroma_db/         the local vector DB, created by `ingest` (do not commit)
-tests/test_hybrid.py   proof it works: python tests/test_hybrid.py
+Vector RAG/main.py            the complete app (single file)
+Vector RAG/requirements.txt   free dependencies only
+Vector RAG/data/              your PDFs (the Spotify app architecture PDF is the sample)
+Vector RAG/chroma_db/         the local vector DB, created by `ingest` (do not commit)
+Vector RAG/tests/test_hybrid.py   proof it works: python tests/test_hybrid.py
+Graph RAG/graph_rag.py        the local concept-graph lane (no extra dependencies)
+Graph RAG/tests/test_graph.py     graph unit tests
+web/                          combined browser demo (source of the Vercel site)
 ```
 
 ## Test
 
 ```bash
-python tests/test_hybrid.py
+cd "Vector RAG" && python tests/test_hybrid.py
+cd "Graph RAG" && python tests/test_graph.py
 ```
 
-Checks ingestion, vector DB save/reload, keyword search on an exact-term
-question, and that hybrid retrieval beats keyword-only search on a
-paraphrased question.
+The hybrid test checks ingestion, vector DB save/reload, keyword search on an
+exact-term question, and that hybrid retrieval beats keyword-only search on a
+paraphrased question. The graph test checks seed matching, two-hop traversal,
+edge provenance, no-match behavior, and fusion deduplication.
 
 ## Notes
 
@@ -97,7 +114,7 @@ paraphrased question.
 ### Vector + Knowledge Graph RAG
 
 `python main.py ask "your question"` now combines the original BM25/vector
-retriever with a local concept graph (`graph_rag.py`). Concepts are linked
+retriever with a local concept graph (`Graph RAG/graph_rag.py`). Concepts are linked
 when they occur in the same sentence; query concepts seed two-hop traversal.
 Each link retains source chunks/pages and is shown as evidence, never a
 verified factual relationship. Both lanes feed a single LLM call.

@@ -1,6 +1,12 @@
-"""Run with python -m unittest discover -s tests -p 'test_graph.py'."""
+"""Run from the Graph RAG folder: python tests/test_graph.py
+(also works under: python -m unittest discover -s tests -p 'test_graph.py')."""
+import sys
 import unittest
+from pathlib import Path
 from types import SimpleNamespace
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from graph_rag import build_graph, graph_search, combine_results
 
 class GraphTests(unittest.TestCase):

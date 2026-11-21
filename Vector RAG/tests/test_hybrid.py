@@ -1,6 +1,6 @@
 """Tests for the hybrid RAG on the bundled Spotify architecture PDF.
 
-Run from the project root:  python tests/test_hybrid.py
+Run from the Vector RAG folder:  python tests/test_hybrid.py
 (Also works under pytest.)
 
 Checks:

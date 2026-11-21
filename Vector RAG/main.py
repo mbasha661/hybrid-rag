@@ -25,6 +25,7 @@ Run:
 
 import argparse
 import os
+import sys
 import warnings
 from pathlib import Path
 
@@ -153,6 +154,8 @@ def main() -> None:
     passages = retriever.invoke(args.question)
     graph_evidence = ""
     if args.retrieval == "combined":
+        # The graph lane lives in the sibling "Graph RAG" folder.
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "Graph RAG"))
         from graph_rag import combine_results
         passages, links = combine_results(passages, chunks, args.question, TOP_K)
         graph_evidence = "\n".join(f"{a} <co-occurs with> {b} [{'; '.join(cite(chunks[i]) for i in ids[:2])}]" for a,b,ids in links)
