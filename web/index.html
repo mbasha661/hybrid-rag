@@ -3,55 +3,95 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hybrid Vector RAG - demo</title>
+<title>Hybrid Vector RAG</title>
+<meta name="theme-color" content="#0f1115">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
-  :root { color-scheme: light dark; }
-  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
-  h1 { font-size: 1.4rem; margin-bottom: .2rem; }
-  .sub { opacity: .7; font-size: .9rem; margin-top: 0; }
-  .row { display: flex; gap: .5rem; margin: 1rem 0; flex-wrap: wrap; align-items: center; }
-  input[type=text] { flex: 1; min-width: 200px; padding: .6rem; font-size: 1rem; border: 1px solid #888; border-radius: 8px; }
-  button { padding: .6rem 1rem; font-size: 1rem; border: 0; border-radius: 8px; background: #1db954; color: #fff; cursor: pointer; }
+  :root {
+    --bg: #0f1115; --card: #171b22; --card2: #1d232d; --line: #2a323f;
+    --text: #e8ecf1; --dim: #9aa6b4; --accent: #1db954; --accent2: #22d3ee;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text);
+         max-width: 780px; margin: 0 auto; padding: 1.5rem 1rem 4rem; line-height: 1.55; }
+  h1 { font-size: 1.5rem; margin: .5rem 0 1.2rem; letter-spacing: .2px; }
+  h1 .dot { color: var(--accent); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 1rem; margin-bottom: 1rem; }
+  .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+  input[type=text], input[type=password] {
+    flex: 1; min-width: 180px; padding: .7rem .9rem; font-size: 1rem;
+    background: var(--card2); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+  input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  button { padding: .7rem 1.2rem; font-size: 1rem; font-weight: 600; border: 0; border-radius: 10px;
+           background: var(--accent); color: #04120a; cursor: pointer; }
   button:disabled { opacity: .5; cursor: wait; }
-  label { font-size: .9rem; }
-  .hit { border: 1px solid #8884; border-radius: 8px; padding: .6rem .8rem; margin: .5rem 0; }
-  .hit .cite { font-weight: 600; font-size: .85rem; }
-  .hit .ranks { font-size: .8rem; opacity: .65; margin-left: .5rem; }
-  .hit .txt { font-size: .9rem; opacity: .9; margin-top: .3rem; }
-  #status { font-size: .85rem; opacity: .7; }
-  #answer { border-left: 3px solid #1db954; padding-left: .8rem; margin: 1rem 0; white-space: pre-wrap; }
-  details { font-size: .85rem; opacity: .8; margin-top: 1.5rem; }
+  button.ghost { background: var(--card2); color: var(--text); border: 1px solid var(--line); font-weight: 500; }
+  .seg { display: flex; background: var(--card2); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .seg label { padding: .45rem .9rem; font-size: .88rem; color: var(--dim); cursor: pointer; }
+  .seg input { display: none; }
+  .seg input:checked + span { color: var(--text); font-weight: 600; }
+  .seg label:has(input:checked) { background: var(--accent); }
+  .seg label:has(input:checked) span { color: #04120a; }
+  #status { font-size: .85rem; color: var(--dim); min-height: 1.2em; }
+  #docbadge { font-size: .82rem; color: var(--accent2); }
+  #answer { display: none; border-left: 3px solid var(--accent); background: var(--card);
+            border-radius: 0 12px 12px 0; padding: .9rem 1rem; margin: 1rem 0; white-space: pre-wrap; }
+  .hit { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: .8rem 1rem; margin: .6rem 0; }
+  .hit .cite { font-weight: 600; font-size: .88rem; }
+  .chip { font-size: .72rem; padding: .1rem .45rem; border-radius: 999px; margin-left: .4rem;
+          background: var(--card2); border: 1px solid var(--line); color: var(--dim); }
+  .hit .txt { font-size: .88rem; color: var(--dim); margin-top: .35rem; }
+  details { font-size: .88rem; color: var(--dim); }
+  details summary { cursor: pointer; font-weight: 600; color: var(--text); }
+  #drop { border: 1.5px dashed var(--line); border-radius: 12px; padding: .9rem; text-align: center;
+          color: var(--dim); font-size: .9rem; cursor: pointer; }
+  #drop.over { border-color: var(--accent); color: var(--accent); }
+  .spin { display: inline-block; width: .9em; height: .9em; border: 2px solid var(--dim);
+          border-top-color: var(--accent); border-radius: 50%; animation: s 0.8s linear infinite; vertical-align: -2px; }
+  @keyframes s { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
-<h1>Hybrid Vector RAG</h1>
-<p class="sub">Keyword search (BM25) + meaning search (vectors), fused - running fully in your browser on the Spotify app architecture PDF. Free demo by Mahaboob Basha.</p>
+<h1>Hybrid Vector RAG<span class="dot">.</span></h1>
 
-<div class="row">
-  <input id="q" type="text" value="How are songs delivered to listeners over the internet?" aria-label="question">
-  <button id="go">Ask</button>
+<div class="card">
+  <div id="drop">Drop a PDF here, or tap to upload - it is chunked, embedded and searched right in your browser</div>
+  <input id="file" type="file" accept="application/pdf" hidden>
+  <div class="row" style="margin-top:.6rem">
+    <span id="docbadge">Searching the sample: spotify_web_app_architecture.pdf (19 passages)</span>
+    <button id="reset" class="ghost" style="display:none">Back to sample</button>
+  </div>
 </div>
-<div class="row">
-  <label><input type="radio" name="mode" value="hybrid" checked> Hybrid (BM25 + vectors)</label>
-  <label><input type="radio" name="mode" value="keyword"> Keyword only</label>
-  <label><input type="radio" name="mode" value="semantic"> Meaning only</label>
+
+<div class="card">
+  <div class="row">
+    <input id="q" type="text" value="How are songs delivered to listeners over the internet?" aria-label="question">
+    <button id="go">Ask</button>
+  </div>
+  <div class="row" style="margin-top:.7rem">
+    <div class="seg">
+      <label><input type="radio" name="mode" value="hybrid" checked><span>Hybrid</span></label>
+      <label><input type="radio" name="mode" value="keyword"><span>Keyword</span></label>
+      <label><input type="radio" name="mode" value="semantic"><span>Meaning</span></label>
+    </div>
+  </div>
+  <div class="row" style="margin-top:.7rem">
+    <details style="flex:1">
+      <summary>Written answer (free Groq key)</summary>
+      <div class="row" style="margin-top:.5rem">
+        <input id="groq" type="password" placeholder="Paste your free Groq API key - stays in this browser" aria-label="groq key">
+      </div>
+    </details>
+  </div>
 </div>
-<div class="row">
-  <input id="groq" type="text" placeholder="Optional: your free Groq API key for a written answer (stays in this browser)" aria-label="groq key">
-</div>
+
 <div id="status">Loading passages...</div>
 <div id="answer"></div>
 <div id="hits"></div>
 
-<details>
-  <summary>How it works</summary>
-  <p>19 passages from the PDF were embedded offline with the free bge-small-en-v1.5 model.
-  Your question is embedded in the browser with the same model (transformers.js, one-time ~30 MB download),
-  BM25 scores exact words, and reciprocal rank fusion merges both rankings.
-  With a free Groq key (console.groq.com) the top passages go to Groq's free tier for a written answer with page citations;
-  without a key you get the passages themselves. The key never leaves your browser except to api.groq.com.</p>
-</details>
-
 <script type="module" src="app.js"></script>
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});</script>
 </body>
 </html>

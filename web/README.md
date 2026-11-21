@@ -3,6 +3,9 @@
 A static, fully client-side version of the hybrid pipeline: BM25 in JS +
 the same bge-small-en-v1.5 embedding model running in the browser
 (transformers.js), fused with weighted RRF. No server code at all.
+Upload any PDF and it is parsed (pdf.js), chunked, embedded and searched
+on your device. Installable as an offline PWA (manifest + service worker
+cache the app and the model).
 
 Live: https://hybrid-rag-mbasha661-1852s-projects.vercel.app
 
