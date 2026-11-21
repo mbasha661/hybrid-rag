@@ -111,12 +111,12 @@ def cite(doc: Document) -> str:
     return f"{src} p.{page}"
 
 
-def answer(question: str, passages: list[Document], llm: str) -> str:
+def answer(question: str, passages: list[Document], llm: str, graph_evidence: str = "") -> str:
     """Step 6: free LLM answer, or just show the passages (evidence mode)."""
     evidence = "\n\n".join(f"[{cite(d)}]\n{d.page_content}" for d in passages)
     if llm == "evidence":
         return evidence
-    prompt = PROMPT.format(question=question, passages=evidence)
+    prompt = PROMPT.format(question=question, passages=evidence + ("\n\nGraph evidence (co-occurrence only, not verified facts):\n" + graph_evidence if graph_evidence else ""))
     if llm == "groq":
         if not os.environ.get("GROQ_API_KEY"):
             raise SystemExit("Set GROQ_API_KEY (free key from https://console.groq.com)")
@@ -136,6 +136,7 @@ def main() -> None:
     sub.add_parser("ingest", help="Index ./data PDFs into the local vector DB")
     p = sub.add_parser("ask", help="Ask a question against the vector DB")
     p.add_argument("question")
+    p.add_argument("--retrieval", choices=["combined", "vector"], default="combined", help="Combine BM25+vectors with a local concept graph (default), or use the original vector lane")
     p.add_argument("--llm", choices=["evidence", "groq", "ollama"], default="evidence")
     args = parser.parse_args()
 
@@ -150,10 +151,16 @@ def main() -> None:
     chunks = all_chunks_from_db(db)
     retriever = get_hybrid_retriever(db, chunks)
     passages = retriever.invoke(args.question)
-    print(f"\nTop {len(passages)} passages (hybrid: BM25 + vector, fused):")
+    graph_evidence = ""
+    if args.retrieval == "combined":
+        from graph_rag import combine_results
+        passages, links = combine_results(passages, chunks, args.question, TOP_K)
+        graph_evidence = "\n".join(f"{a} <co-occurs with> {b} [{'; '.join(cite(chunks[i]) for i in ids[:2])}]" for a,b,ids in links)
+        print("Graph links (co-occurrence, not verified relations):\n" + (graph_evidence or "No matching graph concepts."))
+    print(f"\nTop {len(passages)} passages ({args.retrieval} retrieval):")
     for i, d in enumerate(passages, 1):
         print(f"  {i}. [{cite(d)}] {d.page_content[:110]}...")
-    print("\nAnswer:\n" + answer(args.question, passages, args.llm))
+    print("\nAnswer:\n" + answer(args.question, passages, args.llm, graph_evidence))
 
 
 if __name__ == "__main__":

@@ -51,11 +51,22 @@
   .spin { display: inline-block; width: .9em; height: .9em; border: 2px solid var(--dim);
           border-top-color: var(--accent); border-radius: 50%; animation: s 0.8s linear infinite; vertical-align: -2px; }
   @keyframes s { to { transform: rotate(360deg); } }
+  .pipeline {text-align:center; padding:.5rem 0 1.2rem; font-size:.8rem; color:var(--dim);}
+  .pipeline>span {display:inline-block;padding:.3rem .8rem;border:1px solid var(--line);border-radius:8px;}
+  .pipeline b {display:block;color:var(--accent2);line-height:1.5;font-size:1rem;}
+  .pipeline>div {display:flex;justify-content:center;gap:1rem;}
+  .pipeline>div span {background:var(--card2);padding:.35rem .7rem;border-radius:8px;color:var(--text);}
+  .seg {flex-wrap:wrap;} .seg label {padding:.45rem .65rem;}
+  #graphstats {display:block;font-size:.75rem;color:var(--accent2);font-weight:400;margin-top:.3rem;}
+  .explain,.path {font-size:.78rem;} .path {border-top:1px solid var(--line);padding:.4rem 0;color:var(--text);}
+  .path span {color:var(--dim);display:block;font-size:.72rem;overflow-wrap:anywhere;}
+  #graphview svg {display:block;width:100%;max-height:290px;} #docbadge {overflow-wrap:anywhere;}
 </style>
 </head>
 <body>
 <h1>Hybrid Vector RAG<span class="dot">.</span></h1>
 
+<div class="pipeline" aria-label="Retrieval pipeline"><span>PDF upload</span><b>↙ ↘</b><div><span>Vector RAG</span><span>Knowledge Graph RAG</span></div><b>↘ ↙</b><span>One LLM API → Answer</span></div>
 <div class="card">
   <div id="drop">Drop a PDF here, or tap to upload - it is chunked, embedded and searched right in your browser</div>
   <input id="file" type="file" accept="application/pdf" hidden>
@@ -72,7 +83,9 @@
   </div>
   <div class="row" style="margin-top:.7rem">
     <div class="seg">
-      <label><input type="radio" name="mode" value="hybrid" checked><span>Hybrid</span></label>
+      <label><input type="radio" name="mode" value="combined" checked><span>Combined</span></label>
+      <label><input type="radio" name="mode" value="vector"><span>Vector RAG</span></label>
+      <label><input type="radio" name="mode" value="graph"><span>Graph RAG</span></label>
       <label><input type="radio" name="mode" value="keyword"><span>Keyword</span></label>
       <label><input type="radio" name="mode" value="semantic"><span>Meaning</span></label>
     </div>
@@ -90,6 +103,7 @@
 <div id="status">Loading passages...</div>
 <div id="answer"></div>
 <div id="hits"></div>
+<details id="graphpanel" class="card" open><summary>Knowledge graph <span id="graphstats"></span></summary><p class="explain">Local concept extraction + two-hop graph traversal. Links show terms found together in a sentence, not verified facts.</p><div id="graphview"></div><div id="graphpaths"></div></details>
 
 <script type="module" src="app.js"></script>
 <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});</script>

@@ -92,3 +92,15 @@ paraphrased question.
 - This is a learning project, not a Spotify product. The bundled PDF is an
   architecture/feature document used only as demo content.
 - Nothing here deploys or publishes anything. Everything runs on your machine.
+
+
+### Vector + Knowledge Graph RAG
+
+`python main.py ask "your question"` now combines the original BM25/vector
+retriever with a local concept graph (`graph_rag.py`). Concepts are linked
+when they occur in the same sentence; query concepts seed two-hop traversal.
+Each link retains source chunks/pages and is shown as evidence, never a
+verified factual relationship. Both lanes feed a single LLM call.
+Use `--retrieval vector` for the original BM25/vector behavior. No graph
+service, paid API, or extra package is needed. The Vercel UI implements the
+same lightweight graph approach and shows matching links and source pages.

@@ -1,7 +1,7 @@
 // Offline cache: app shell + the local embedding model + sample data.
-const CACHE = "hybrid-rag-v1";
+const CACHE = "hybrid-rag-v3-graph";
 const PRECACHE = [
-  "./", "index.html", "app.js", "chunks.json", "manifest.webmanifest",
+  "./", "index.html", "app.js", "graph.mjs", "chunks.json", "manifest.webmanifest",
   "icon-192.png", "icon-512.png",
   "models/Xenova/bge-small-en-v1.5/config.json",
   "models/Xenova/bge-small-en-v1.5/tokenizer.json",
