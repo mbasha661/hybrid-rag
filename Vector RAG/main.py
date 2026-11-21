@@ -142,7 +142,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "ingest":
-        if DB_DIR.exists():
+        if DB_DIR.exists() and any(DB_DIR.iterdir()):
             print(f"{DB_DIR} already exists - delete it to re-index.")
             return
         get_db()
