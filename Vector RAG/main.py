@@ -77,7 +77,7 @@ def get_db(chunks: list[Document] | None = None) -> Chroma:
     """Steps 3+4: embed chunks with the free local model and store in Chroma.
     On later runs the DB is loaded from disk - no re-embedding needed."""
     embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
-    if DB_DIR.exists():
+    if DB_DIR.exists() and any(DB_DIR.iterdir()):
         print(f"Loading existing vector DB from {DB_DIR}")
         return Chroma(persist_directory=str(DB_DIR), embedding_function=embeddings)
     if chunks is None:
